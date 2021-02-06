@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/722129/c83fd80e7e1e4140a43d2d7804d15da9
+bundleId: https://api.rpubs.com/api/v1/document/722129/c83fd80e7e1e4140a43d2d7804d15da9
+url: http://rpubs.com/spjca/722129
+when: 1612585454.79843

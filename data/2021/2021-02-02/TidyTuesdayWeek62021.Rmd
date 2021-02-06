@@ -1,0 +1,133 @@
+---
+title: 'Tidy Tuesday 2021 Week 6: Historically Black Colleges and Universities'
+author: "Sean Jackson"
+date: "2/5/2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+```
+
+<style>
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+pre, code, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  background-color: #ffffff;
+}
+</style>
+
+For this weeks submission I created several animations. The comparative time series data provided is perfect for this type of visualization. 
+
+```{r libraries}
+library(tidyverse)
+library(readxl)
+library(glue)
+library(viridis)
+library(hrbrthemes)
+library(gganimate)
+```
+
+Load and clean the data for the visualizations:
+
+```{r data loading and cleaning}
+hbcu_all <- read_excel("tabn313.20.xls", sheet = 1)
+
+#make the names easier to work with
+hbcu_all <- hbcu_all %>%
+  rename('Public2Year' = `2-year - Public` ,
+         'Private2Year' = `2-year - Private`,
+         'Public4Year' = `4-year - Public`,
+         'Private4Year' = `4-year - Private`)
+
+hbcu_colleges_perc <- hbcu_all %>%
+  select(Year,Public2Year,Private2Year,Public4Year,Private4Year) %>%
+  pivot_longer(cols = c(Public2Year,Private2Year,Public4Year,Private4Year), 
+               names_to = "College Type", 
+               values_to = "Total")
+
+hbcu_colleges_perc_area <- hbcu_colleges_perc %>%
+  group_by(Year,`College Type`) %>%
+  summarise(n = sum(Total)) %>%
+  mutate(Percentage = n / sum(n)) %>%
+  select(-n) 
+```
+
+First animation will show the attendance to each university type over time using facet_wrap plots:
+
+```{r animation 1}
+q <- ggplot(hbcu_colleges_perc, aes(x = Year, y = Total, fill = `College Type`)) +
+  facet_wrap(~ `College Type`) +
+  geom_area(alpha=0.6 , size=.5, colour="black") +
+  scale_fill_viridis(discrete = T) +
+  theme_ipsum() +
+  theme(legend.position="bottom") +
+  labs(x="Year", y="Total",
+       subtitle="Annual Attendance By University Type 1976 to 2015",
+       caption="SeanPJ.com") +
+  ggtitle("Historically Black Colleges and Universities") +
+  transition_reveal(Year) 
+
+animate(q,end_pause = 10)
+```
+
+Next animation shows the total attendance counts for all HBCUs in a stacked area chart:
+
+```{r animation 2}
+t <- ggplot(hbcu_colleges_perc, aes(x = Year, y = Total, fill = `College Type`)) +
+  geom_area(alpha=0.6 , size=.5, colour="black") +
+  scale_fill_viridis(discrete = T) +
+  scale_y_continuous(breaks = c(0,50000,100000,150000,200000,250000,300000,350000) )+
+  theme_ipsum() +
+  theme(legend.position="bottom") +
+  labs(x="Year", y="Total",
+       subtitle="Annual Attendance By University Type 1976 to 2015",
+       caption="SeanPJ.com") +
+  ggtitle("Historically Black Colleges and Universities") +
+  transition_reveal(Year) 
+
+animate(t,end_pause = 10)
+```
+
+And the final animation shows the proprtional percentage share of total attendance for each college type over time.
+
+```{r animation 3}
+p <- ggplot(hbcu_colleges_perc_area, aes(x = Year, y = Percentage*100, fill = `College Type`)) +
+  geom_area(alpha=0.6 , size=.5, colour="black") +
+  scale_fill_viridis(discrete = T) +
+  theme_ipsum() +
+  theme(legend.position="bottom") +
+  labs(x="Year", y="Percent",
+       subtitle="Annual Attendance By University Type 1976 to 2015",
+       caption="SeanPJ.com") +
+  ggtitle("Historically Black Colleges and Universities") +
+  transition_reveal(Year)
+  
+animate(p, end_pause = 10)
+```
