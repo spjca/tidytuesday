@@ -131,3 +131,55 @@ p <- ggplot(hbcu_colleges_perc_area, aes(x = Year, y = Percentage*100, fill = `C
   
 animate(p, end_pause = 10)
 ```
+
+Bonus: Population College Attendance
+
+```{r}
+bach_students <- read_excel("104.10.xlsx", 
+                            sheet = 2
+                            ,col_names = c("Year",
+                                           "Total",
+                                           "SE_Total",
+                                           "White",
+                                           "SE_White",
+                                           "Black",
+                                           "SE_Black",
+                                           "Hispanic",
+                                           "SE_Hispanic",
+                                           "Total_API",
+                                           "SE_Total_API",
+                                           "Asian",
+                                           "SE_Asian",
+                                           "PacIslander",
+                                           "SE_PacIslander",
+                                           "AmericanIndian",
+                                           "SE_AI",
+                                           "Multiethnic",
+                                           "SE_Multiethnic"))
+
+bach_students <- bach_students[-1,]
+
+bach_clean <- bach_students %>%
+  select(Year,Total,White,Black,Hispanic,Asian,PacIslander,AmericanIndian,Multiethnic) %>%
+  pivot_longer(cols = c(Total,White,Black,Hispanic,Asian,PacIslander,AmericanIndian,Multiethnic),
+               names_to="Ethnicity",
+               values_to="Percentages") %>% 
+  mutate((across(c(Year,Percentages),as.numeric))) 
+
+# no data in first 21 rows (starts in 1940)
+bach_clean <- bach_clean[-c(1:20),]
+
+anim <- ggplot(bach_clean, aes(x = Year, y = Percentages, color = Ethnicity)) +
+  geom_line() +
+  geom_point() +
+  theme_ipsum() +
+  theme(legend.position="bottom") +
+  labs(x="Year", y="Percent All Persons Age 25 and Older",
+       title = "Percent Population Attended College",
+       subtitle="1930 to 2016",
+       caption="SeanPJ.com") +
+  transition_reveal(Year)
+
+animate(anim, end_pause = 10)
+```
+
