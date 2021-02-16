@@ -321,9 +321,25 @@ income_mean %>%
   theme_ipsum() +
   theme(legend.position="none") +
   labs(x="Year", y="Total",
+       title = "Mean Income 1996-2016",
        subtitle = 'Facet Grid Line Plot by Income Percentile and Race',
-       caption="SeanPJ.com") +
-  ggtitle("Mean Income 1996-2016") 
+       caption="SeanPJ.com")  
+
+
+x <- income_mean %>%
+  filter(year > 1996 & 
+           race == c('White Alone','Black Alone','Hispanic','Asian Alone', 'All Races') &
+           dollar_type == 'Current Dollars') %>%
+  ggplot(., aes(x=year,y=income_dollars, colour = race)) +
+  geom_line() +
+  scale_y_continuous() +
+  facet_grid(income_quintile_f ~ race, scales = "free") +
+  theme_ipsum() +
+  theme(legend.position="none") +
+  labs(x="Year", y="Total",
+       title = "Mean Income 1996-2016",
+       subtitle = 'Facet Grid Line Plot by Income Percentile and Race',
+       caption="SeanPJ.com")
 
 ##### need to finish below
 

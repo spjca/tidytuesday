@@ -1,0 +1,84 @@
+---
+title: 'Tidy Tuesday 2021 Week 7: Inequality Data'
+author: "Sean Jackson"
+date: "2/12/2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+```
+
+<style>
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+pre, code, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  background-color: #ffffff;
+}
+</style>
+
+For this weeks submission I created several animations. The comparative time series data provided is perfect for this type of visualization. 
+
+```{r libraries}
+library(tidyverse)
+library(tidytuesdayR)
+library(viridis)
+library(hrbrthemes)
+library(gganimate)
+```
+
+Load and clean the data for the visualizations:
+
+```{r load and clean data}
+income_mean <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/income_mean.csv')
+
+# reorder income quintiles
+income_mean$income_quintile_f <- factor(income_mean$income_quintile,
+                                             levels = c("Top 5%", "Highest", "Second", "Middle", "Fourth","Lowest"))
+```
+
+Create line plots faceted by race and income group:
+
+```{r, fig.width=10,fig.height=15}
+income_mean %>%
+  filter(year > 1996 & 
+           race == c('White Alone','Black Alone','Hispanic','Asian Alone', 'All Races') &
+           dollar_type == 'Current Dollars') %>%
+  ggplot(., aes(x=year,y=income_dollars, colour = race)) +
+  geom_line() +
+  scale_y_continuous() +
+  facet_grid(income_quintile_f ~ race, scales = "free") +
+  theme_ipsum() +
+  theme(legend.position="none") +
+  labs(x="Year", y="Total",
+       title = "Mean Income 1996-2016",
+       subtitle = 'Facet Grid Line Plot by Income Percentile and Race',
+       caption="SeanPJ.com")
+```
+
