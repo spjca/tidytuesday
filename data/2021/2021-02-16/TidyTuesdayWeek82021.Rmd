@@ -1,0 +1,105 @@
+---
+title: 'Tidy Tuesday Week 8: W.E.B Dubios Challenge'
+author: "Sean Jackson"
+date: "2/18/2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+```
+
+<style>
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+pre, code, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  background-color: #ffffff;
+}
+</style>
+
+```{r libraries}
+library(tidyverse)
+library(ggplot2)
+library(viridis)
+library(grid)
+library(gridExtra)
+library(hrbrthemes)
+library(scales)
+```
+
+For this weeks challenge, I want to highlight 2 different charts in the same overall visualization. I'll be working with the Tidy Tuesday Week 8 Census data
+
+
+```{r load and clean}
+census <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/census.csv')
+
+
+c <- census %>%
+  filter(region == "USA Total") %>%
+  select(region,year,white,black,black_free,black_slaves)%>%
+  pivot_longer(cols = c(white,black,black_free,black_slaves), 
+               names_to = "Group", 
+               values_to = "Total") %>%
+  filter(Group != 'black')
+
+cp <- c %>%
+  group_by(year, Group) %>%
+  summarise(n = sum(Total)) %>%
+  mutate(Percentage = n / sum(n)) %>%
+  select(!n)
+```
+
+
+
+```{r visualize}
+p1 <- ggplot(c, aes(x=year,y=Total,fill=Group))+
+  geom_area(alpha=0.6 , size=.5, colour="black") +
+  scale_fill_viridis(discrete = T) +
+  theme_ipsum() +
+  theme(legend.position="bottom") +
+  labs(x="Year", y="Total",
+       subtitle = "Total Population by Group",
+       caption="") +
+  scale_y_continuous(labels = comma) 
+
+p2 <- ggplot(cp, aes(x=year,y=Percentage,fill=Group)) +
+  geom_area(alpha=0.6 , size=.5, colour="black") +
+  scale_fill_viridis(discrete = T) +
+  theme_ipsum() +
+  theme(legend.position="bottom") +
+  labs(x="Year", y="Total",
+       subtitle = "Percentage Population by Group",
+       caption="SeanPJ.com") +
+  scale_y_percent()
+
+grid.arrange(p1,p2, nrow=1,
+             top = textGrob("Tidy Tuesday Week 8: W.E.B Du Bois Challenge",
+                            gp=gpar(fontsize=20,font=3)))
+```
+

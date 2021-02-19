@@ -25,6 +25,8 @@ c <- census %>%
                names_to = "Group", 
                values_to = "Total")
 
+
+
 us_state_map = map_data("state");
 
 
