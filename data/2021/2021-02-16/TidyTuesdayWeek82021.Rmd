@@ -53,13 +53,13 @@ library(hrbrthemes)
 library(scales)
 ```
 
-For this weeks challenge, I want to highlight 2 different charts in the same overall visualization. I'll be working with the Tidy Tuesday Week 8 Census data
+For the challenge this week, I want to highlight 2 different charts in the same overall visualization. I'll be working with the Tidy Tuesday Week 8 Census data.
 
 
 ```{r load and clean}
 census <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/census.csv')
 
-
+# for the numeric charts
 c <- census %>%
   filter(region == "USA Total") %>%
   select(region,year,white,black,black_free,black_slaves)%>%
@@ -68,6 +68,7 @@ c <- census %>%
                values_to = "Total") %>%
   filter(Group != 'black')
 
+# for the percentage charts
 cp <- c %>%
   group_by(year, Group) %>%
   summarise(n = sum(Total)) %>%
@@ -75,12 +76,13 @@ cp <- c %>%
   select(!n)
 ```
 
+Side by side charts:
 
-
-```{r visualize}
+```{r visualize, fig.height = 6, fig.width = 12, fig.align = "center"}
+# numeric chart
 p1 <- ggplot(c, aes(x=year,y=Total,fill=Group))+
   geom_area(alpha=0.6 , size=.5, colour="black") +
-  scale_fill_viridis(discrete = T) +
+  scale_fill_viridis(discrete = T, option = 'magma') +
   theme_ipsum() +
   theme(legend.position="bottom") +
   labs(x="Year", y="Total",
@@ -88,9 +90,10 @@ p1 <- ggplot(c, aes(x=year,y=Total,fill=Group))+
        caption="") +
   scale_y_continuous(labels = comma) 
 
+# percentage chart
 p2 <- ggplot(cp, aes(x=year,y=Percentage,fill=Group)) +
   geom_area(alpha=0.6 , size=.5, colour="black") +
-  scale_fill_viridis(discrete = T) +
+  scale_fill_viridis(discrete = T, option = 'magma') +
   theme_ipsum() +
   theme(legend.position="bottom") +
   labs(x="Year", y="Total",
@@ -98,8 +101,26 @@ p2 <- ggplot(cp, aes(x=year,y=Percentage,fill=Group)) +
        caption="SeanPJ.com") +
   scale_y_percent()
 
+# arrange them side by side and add a title
 grid.arrange(p1,p2, nrow=1,
              top = textGrob("Tidy Tuesday Week 8: W.E.B Du Bois Challenge",
                             gp=gpar(fontsize=20,font=3)))
+```
+
+Bonus animation:
+
+```{r bonus animations}
+library(gganimate)
+
+ggplot(c, aes(x=year,y=Total,fill=Group))+
+  geom_area(alpha=0.6 , size=.5, colour="black") +
+  scale_fill_viridis(discrete = T, option = 'magma') +
+  theme_ipsum() +
+  theme(legend.position="bottom") +
+  labs(x="Year", y="Total",
+       subtitle = "Total Population by Group",
+       caption="SeanPJ.com") +
+  scale_y_continuous(labels = comma) +
+  transition_reveal(year) 
 ```
 
