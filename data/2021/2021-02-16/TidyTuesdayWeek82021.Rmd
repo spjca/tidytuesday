@@ -1,5 +1,5 @@
 ---
-title: 'Tidy Tuesday Week 8: W.E.B Dubios Challenge'
+title: 'Tidy Tuesday Week 8: W.E.B Du Bios Challenge'
 author: "Sean Jackson"
 date: "2/18/2021"
 output: 
