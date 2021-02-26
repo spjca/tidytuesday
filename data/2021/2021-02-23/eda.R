@@ -3,6 +3,7 @@ library(ggplot2)
 library(viridis)
 library(hrbrthemes)
 library(scales)
+library(dplyr)
 
 # load data
 employed <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-23/employed.csv')
@@ -11,25 +12,29 @@ earn <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidyt
 earn$yrQtr <- apply( earn[ , c("year","quarter") ] , 1 , paste , collapse = "-" )
 
 
-earn %>%
-  filter(sex!='Both Sexes') %>%
-  filter(sex == 'Men')%>%
+x <- earn %>%
+  filter(
+    #race == 'All Races' & 
+      age == '16 years and over' & 
+      ethnic_origin == 'All Origins'
+           ) %>%
   select(sex,
-         #race,ethnic_origin,
-         yrQtr,median_weekly_earn) %>%
-  group_by(sex,
-           #race,ethnic_origin,
-           yrQtr) %>%
+         race,
+         #ethnic_origin,
+         yrQtr,median_weekly_earn) #%>%
+  #filter(sex !="Both Sexes") %>%
+  #group_by(sex, race,ethnic_origin, yrQtr) %>%
   #summarise(n = sum(median_weekly_earn)) %>%
   #mutate(Percentage = n / sum(n)) %>%
   #select(!n) %>%
-  ggplot(., aes(x=yrQtr,y=median_weekly_earn,fill=sex)) +
-  geom_line(alpha=0.6 , size=.5, colour="black") +
+ggplot(x) +
+  geom_line(aes(x=yrQtr,y=median_weekly_earn, group = sex, color = race)) +
+  facet_wrap(~sex)+
   scale_fill_viridis(discrete = T) +
   theme_ipsum() +
   theme(legend.position="bottom") +
   labs(x="Year", y="Total",
-       subtitle = "Percentage Population by Group",
+       subtitle = "Median Weekly Earnings ",
        caption="SeanPJ.com") +
   theme(
     axis.text.x = element_text(
@@ -38,4 +43,6 @@ earn %>%
       vjust = 0.5
       )
   )
+
+
 
