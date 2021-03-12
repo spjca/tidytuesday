@@ -1,18 +1,69 @@
-# libraries
+---
+title: "Tidy Tuesday 2021 Week 9"
+author: "Sean Jackson"
+date: "2/26/2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+```
+
+<style>
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+pre, code, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  background-color: #ffffff;
+}
+</style>
+
+```{r libraries}
 library(ggplot2)
 library(viridis)
 library(hrbrthemes)
 library(scales)
 library(dplyr)
 library(gganimate)
+```
 
+For Tidy Tuesday 2021 Week 9 we are looking at US Bureau of Labor Statistics data from 2010 to 2020. The data below is cleaned and faceted along gender, age, and income groups to get a better perspective of lifetime income.
 
-# load data
+```{r data loading}
 employed <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-23/employed.csv')
 earn <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-23/earn.csv')
+```
 
+As always the data needs a little cleaning up for visualizing:
+
+```{r data cleaning}
+# first plot
 earn$yrQtr <- apply( earn[ , c("year","quarter") ] , 1 , paste , collapse = "-" )
-
 
 en <- earn %>%
   filter(
@@ -33,9 +84,26 @@ en <- earn %>%
          yrQtr,median_weekly_earn) 
 
 
-en_plot <- en %>%
+# second plot
+employed$minor_occupation[employed$minor_occupation=="Manage-ment, business, and financial operations occupations"] <- "Management, business, and financial operations occupations"
+
+e <- employed %>%
+  filter(race_gender=='Men' | race_gender =='Women') %>%
+  select(minor_occupation,race_gender,employ_n,year)  %>%  
+  #flip the sign to make them back to back
+  mutate(employ_n_inv= ifelse(race_gender =="Men",employ_n,employ_n*-1)) %>% 
+  select(!employ_n)
+```
+
+First, a side by side line chart where each chart represents a gender and each line represents a different age cohort's median weekly income 2010 to 2020:
+
+```{r static visual, fig.height=8, fig.width=20}
+en %>%
   ggplot(.) +
-  geom_line(aes(x=yrQtr,y=median_weekly_earn, group = age, color = age)) +
+  geom_line(aes(x=yrQtr,
+                y=median_weekly_earn, 
+                group = age, 
+                color = age), size = 2) +
   facet_grid(~ sex)+
   scale_fill_viridis(discrete = T) +
   theme_ipsum() + 
@@ -47,24 +115,13 @@ en_plot <- en %>%
   theme(legend.position="bottom") +
   labs(x="Year", y="Median $/Week Earned",
        title = "Median Weekly Earnings by Gender",
-       #subtitle = "2010 - 2020",
-       caption="SeanPJ.com\n Data from US Bureau of Labor Statistics") 
-  
-en_plot
+       subtitle = "2010 - 2020",
+       caption="Data from US Bureau of Labor Statistics\nSeanPJ.com") 
+```
 
+Second, an animation of a diverted bar plot with each side of the central axis representing the total number of workers for each gender in each occupation from 2015 to 2020:
 
-# lets look at employment data as a divergent bar chart
-# first there is an error in the minor_occupation data
-employed$minor_occupation[employed$minor_occupation=="Manage-ment, business, and financial operations occupations"] <- "Management, business, and financial operations occupations"
-
-e <- employed %>%
-  filter(race_gender=='Men' | race_gender =='Women') %>%
-  select(minor_occupation,race_gender,employ_n,year)  %>%  
-  #flip the sign to make them back to back
-  mutate(employ_n_inv= ifelse(race_gender =="Men",employ_n,employ_n*-1)) %>% 
-  select(!employ_n)
-  
-
+```{r animation}
 x <- ggplot(e, aes(x=minor_occupation,y=employ_n_inv,fill=race_gender)) +
   geom_bar(stat="identity",position="identity") +
   coord_flip() +
@@ -90,7 +147,5 @@ x <- ggplot(e, aes(x=minor_occupation,y=employ_n_inv,fill=race_gender)) +
 anim <- x + transition_states(year, transition_length = 4, state_length = 1)
 
 
-animate(anim, 200, fps = 20,  width = 1200, height = 1000, 
-        renderer = gifski_renderer("gganim.gif"))
-
-
+animate(anim, 200, fps = 20,  width = 1200, height = 1000)
+```

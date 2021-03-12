@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/731605/ecffcc99cfd346a59c9cf1a44cf80e24
+bundleId: https://api.rpubs.com/api/v1/document/731605/ecffcc99cfd346a59c9cf1a44cf80e24
+url: http://rpubs.com/spjca/731605
+when: 1614399942.89482
